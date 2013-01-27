@@ -3,6 +3,11 @@ TwitchHQ
 
 Python library for Twitch.tv
 
+Requirements
+------------
+
+* httplib2
+
 Command Line Tool
 -----------------
 
