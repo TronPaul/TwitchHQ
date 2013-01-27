@@ -13,7 +13,10 @@ def join_paths(*paths):
             request_path.append(path[1:])
         else:
             request_path.append(path)
-    return u'/' + u'/'.join(paths)
+    path = u'/'.join(paths)
+    if path.endswith('/'):
+        path = path[:-1]
+    return path
 
 class RestRequester(object):
     def __init__(self, base_url=None):
@@ -78,7 +81,9 @@ class RestRequester(object):
                 path += u'?' + urllib.urlencode(args)
             elif method == 'PUT' or method == 'POST':
                 headers['Content-Type'] = 'application/x-www-form-urlencoded'
-                body = urllib.urlencode(args)
+                body = urllib.urlencode(args, True)
+
+        print path, method, body, headers
 
         return self.h.request(u'%s://%s%s' % (scheme, host, path),
                 method.upper(), body=body, headers=headers)

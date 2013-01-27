@@ -9,32 +9,74 @@ class UnauthorizedError(Exception):
     pass
 
 class BaseTwitch(object):
-    def __init__(self):
-        self.token = None
-        self.r = rest.RestRequester('https://api.twitch.tv/kraken')
+    def __init__(self, token=None):
+        self.token = token
+        self._r = rest.RestRequester('https://api.twitch.tv/kraken')
 
     @property
     def auth_headers(self):
         return {'Authorization':'OAuth %s' % self.token.access_token}
 
+    def get(self, *args, **kwargs):
+        if self.token:
+            if 'headers' in kwargs:
+                kwargs['headers'].update(self.auth_headers)
+            else:
+                kwargs['headers'] = self.auth_headers
+        return self._r.get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        if self.token:
+            if 'headers' in kwargs:
+                kwargs['headers'].update(self.auth_headers)
+            else:
+                kwargs['headers'] = self.auth_headers
+        return self._r.post(*args, **kwargs)
+
+    def put(self, *args, **kwargs):
+        if self.token:
+            if 'headers' in kwargs:
+                kwargs['headers'].update(self.auth_headers)
+            else:
+                kwargs['headers'] = self.auth_headers
+        return self._r.put(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        if self.token:
+            if 'headers' in kwargs:
+                kwargs['headers'].update(self.auth_headers)
+            else:
+                kwargs['headers'] = self.auth_headers
+        return self._r.delete(*args, **kwargs)
+
+    def head(self, *args, **kwargs):
+        if self.token:
+            if 'headers' in kwargs:
+                kwargs['headers'].update(self.auth_headers)
+            else:
+                kwargs['headers'] = self.auth_headers
+        return self._r.head(*args, **kwargs)
+
 class ChannelMixin(object):
     def channel(self, channel):
-        return self.r.get('channels/%s' % channel)
+        return self._r.get('channels/%s' % channel)
 
     def my_channel(self):
         if not self.token or 'channel_read' not in self.token.scopes:
             raise UnauthorizedError('channel_read scope required')
-        self.r.get('channel', headers=self.auth_header)
+        return self._r.get('channel', headers=self.auth_headers)
 
     def update_channel(self, channel, status=None, game=None):
         if not self.token or 'channel_editor' not in self.token.scopes:
             raise UnauthorizedError('channel_editor scope required')
         args = {}
         if status:
-            args['status'] = status
+            args['channel[status]'] = status
         if game:
-            args['game'] = game
-        return self.r.put('channels/%s' % channel, args={'channel':args}, headers=self.auth_header)
+            args['channel[game]'] = game
+        return self._r.put('channels/%s' % channel,
+                args=args,
+                headers=self.auth_headers)
 
     def run_commercial(self, length=None):
         if not self.token or 'channel_commercial' not in self.token.scopes:
@@ -42,7 +84,8 @@ class ChannelMixin(object):
         args = None if not length else {}
         if length:
             args['length'] = length
-        return self.r.post('channels/%s/commercial' % channel, args=args, headers=self.auth_header)
+        return self._r.post('channels/%s/commercial' % channel, args=args,
+                headers=self.auth_headers)
 
 class GamesMixin(object):
     def top_games(self, limit=None, offset=None):
@@ -51,11 +94,11 @@ class GamesMixin(object):
             args['limit'] = limit
         if offset:
             args['offset'] = offset
-        return self.r.get('games/top', args=args)
+        return self._r.get('games/top', args=args)
 
 class IngestsMixin(object):
     def ingests(self):
-        return self.r.get('ingests')
+        return self._r.get('ingests')
 
 class SearchMixin(object):
     def search_streams(self, queury, limit=None, offset=None):
@@ -64,13 +107,13 @@ class SearchMixin(object):
             args['limit'] = limit
         if offset:
             args['offset'] = offset
-        return self.r.get('search/streams', args=args)
+        return self._r.get('search/streams', args=args)
 
     def search_games(self, query, live=None):
         args = {'query':query, 'type':suggest}
         if live:
             args['live'] = live
-        return self.r.get('search/games', args=args)
+        return self._r.get('search/games', args=args)
 
 class TeamsMixin(object):
     def teams(self, limit=None, offset=None):
@@ -79,23 +122,23 @@ class TeamsMixin(object):
             args['limit'] = limit
         if offset:
             args['offset'] = offset
-        return self.r.get('teams', args=args)
+        return self._r.get('teams', args=args)
 
     def team(self, team):
-        return self.r.get('teams/%s' % team)
+        return self._r.get('teams/%s' % team)
 
 class UserMixin(object):
     def user(self, user):
-        return self.r.get('users/%s' % user)
+        return self._r.get('users/%s' % user)
 
     def my_user(self):
         if not self.token or 'user_read' not in self.token.scopes:
             raise UnauthorizedError('user_read scope required')
-        return self.r.get('user', headers=self.auth_header)
+        return self._r.get('user', headers=self.auth_headers)
 
 class VideosMixin(object):
     def video(self, video_id):
-        return self.r.get('videos/%s' % video_id)
+        return self._r.get('videos/%s' % video_id)
 
     def channel_videos(self, channel, limit=None, offset=None):
         args = None if not limit and not offset else {}
@@ -103,7 +146,7 @@ class VideosMixin(object):
             args['limit'] = limit
         if offset:
             args['offset'] = offset
-        return self.r.get('channels/%s/videos' % channel, args=args)
+        return self._r.get('channels/%s/videos' % channel, args=args)
 
 class TwitchAPI(BaseTwitch, ChannelMixin, GamesMixin, IngestsMixin,
         SearchMixin, TeamsMixin, UserMixin, VideosMixin):
