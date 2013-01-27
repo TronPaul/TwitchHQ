@@ -30,7 +30,7 @@ Example usage:
     Navigate to: https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&scope=channel_editor&scope=channel_read&redirect_uri=http%3A%2F%2Flocalhost&client_id=blahblahblahsecretstuff
     Args (copy the text after the ? in the url): code=blahblahblahblah&scope=channel_read
 
-    $ twitch.py update --status 'TF2 Soap DM - Scout'
+    $ twitch.py update --status 'TF2 Soap DM - Scout' my_channel
 
 Library
 -------
