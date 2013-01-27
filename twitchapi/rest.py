@@ -83,7 +83,5 @@ class RestRequester(object):
                 headers['Content-Type'] = 'application/x-www-form-urlencoded'
                 body = urllib.urlencode(args, True)
 
-        print path, method, body, headers
-
         return self.h.request(u'%s://%s%s' % (scheme, host, path),
                 method.upper(), body=body, headers=headers)
