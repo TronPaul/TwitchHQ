@@ -2,6 +2,8 @@ venv
 .cache
 *.py[cod]
 *.swp
+.access_token
+.auth_settings
 
 # C extensions
 *.so

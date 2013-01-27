@@ -1,0 +1,6 @@
+{
+  "client_id":"CLIENT ID",
+  "client_secret":"CLIENT SECRET",
+  "redirect_uri":"http://localhost",
+  "scopes":["channel_editor", "channel_read"]
+}
