@@ -5,6 +5,7 @@ import urllib
 import json
 import os
 from twitchapi import TwitchAPI
+from twitchapi import JustinAPI
 from twitchapi.twitch import TwitchToken
 
 TOKEN_FILE='.access_token'
@@ -29,8 +30,11 @@ def make_token(token_file):
             json_token['scope'])
     return None
 
-def make_client(token_file):
+def make_twitch_client(token_file):
     return TwitchAPI(make_token(token_file))
+
+def make_justin_client():
+    return JustinAPI()
 
 def clear_token(token_file):
     if os.path.isfile(token_file):
@@ -65,15 +69,15 @@ def auth(twitch_client, token_file, auth_settings_file):
             'redirect_uri':auth_settings['redirect_uri'],
             'code':args['code']
            }
-    resp, con = twitch_client.post('oauth2/token', args=args)
-    token = json.loads(con)
+    resp = twitch_client.post('oauth2/token', args=args)
+    token = resp.json
     clear_token(token_file)
     json.dump(token, open(TOKEN_FILE, 'w'))
 
 def check(twitch_client, token_file):
     if os.path.isfile(token_file):
-        resp, con = twitch_client.get('/')
-        d = json.loads(con)
+        resp = twitch_client.get('/')
+        d = resp.json
         if d['token']['valid']:
             print ('Authenticated! Scopes: %s' %
                 d['token']['authorization']['scopes'])
@@ -82,15 +86,18 @@ def check(twitch_client, token_file):
     clear_token(token_file)
 
 def update(twitch_client, channel, status, game):
-    resp, con = twitch_client.update_channel(channel, status, game)
+    resp = twitch_client.update_channel(channel, status, game)
     if resp.status != 200:
         print 'Error occurred!'
         print resp, con
     else:
         print 'Update successful.'
 
-def channel_info(twitch_client):
-    print twitch_client.my_channel()
+def status(twitch_client, justin_client):
+    twitch_info = twitch_client.my_channel().json
+    justin_info = justin_client.channel_summary(twitch_info['name']).json
+    print 'Status: %s\nPlaying: %s\nViewers: %d' % (twitch_info['status'], twitch_info['game'],
+            justin_info['viewers_count'])
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -105,10 +112,10 @@ if __name__ == '__main__':
     up_parser.add_argument('channel', type=str)
     up_parser.add_argument('--status', type=str)
     up_parser.add_argument('--game', type=str)
-    channel_info_parser = subparsers.add_parser('channel_info')
+    status_parser = subparsers.add_parser('status')
 
     args = parser.parse_args()
-    twitch_client = make_client(args.token_file)
+    twitch_client = make_twitch_client(args.token_file)
     if args.subparser_name == 'auth':
         auth(twitch_client, args.token_file, args.auth_settings_file)
     elif args.subparser_name == 'check':
@@ -116,5 +123,6 @@ if __name__ == '__main__':
     elif args.subparser_name == 'update':
         if args.game or args.status:
             update(twitch_client, args.channel, args.status, args.game)
-    elif args.subparser_name == 'channel_info':
-        channel_info(twitch_client)
+    elif args.subparser_name == 'status':
+        justin_client = make_justin_client()
+        status(twitch_client, justin_client)

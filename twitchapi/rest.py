@@ -1,6 +1,7 @@
 import httplib2
 import urlparse
 import urllib
+import json
 
 def join_paths(*paths):
     request_path = []
@@ -17,6 +18,17 @@ def join_paths(*paths):
     if path.endswith('/'):
         path = path[:-1]
     return path
+
+class RestResponse(object):
+    def __init__(self, response, content):
+        self.response = response
+        self.content = content
+
+    @property
+    def json(self):
+        if not hasattr(self, '_json'):
+            self._json = json.loads(self.content)
+        return self._json
 
 class RestRequester(object):
     def __init__(self, base_url=None):
@@ -83,5 +95,5 @@ class RestRequester(object):
                 headers['Content-Type'] = 'application/x-www-form-urlencoded'
                 body = urllib.urlencode(args, True)
 
-        return self.h.request(u'%s://%s%s' % (scheme, host, path),
-                method.upper(), body=body, headers=headers)
+        return RestResponse(*self.h.request(u'%s://%s%s' % (scheme, host, path),
+                method.upper(), body=body, headers=headers))
