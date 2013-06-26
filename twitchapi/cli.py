@@ -99,7 +99,7 @@ def status(twitch_client, justin_client):
     print 'Status: %s\nPlaying: %s\nViewers: %d' % (twitch_info['status'], twitch_info['game'],
             justin_info['viewers_count'])
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--token-file', default=TOKEN_FILE, dest='token_file')
     parser.add_argument('--auth-settings-file', default=AUTH_SETTINGS_FILE,
@@ -126,3 +126,6 @@ if __name__ == '__main__':
     elif args.subparser_name == 'status':
         justin_client = make_justin_client()
         status(twitch_client, justin_client)
+
+if __name__ == '__main__':
+    main()
