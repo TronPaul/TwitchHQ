@@ -1,4 +1,5 @@
-import rest
+import twitchapi.rest as rest
+import twitchapi.twitch.base as base
 
 class TwitchToken(object):
     def __init__(self, access_token, scopes):
@@ -7,55 +8,6 @@ class TwitchToken(object):
 
 class UnauthorizedError(Exception):
     pass
-
-class BaseTwitch(object):
-    def __init__(self, token=None):
-        self.token = token
-        self._r = rest.RestRequester('https://api.twitch.tv/kraken')
-
-    @property
-    def auth_headers(self):
-        return {'Authorization':'OAuth %s' % self.token.access_token}
-
-    def get(self, *args, **kwargs):
-        if self.token:
-            if 'headers' in kwargs:
-                kwargs['headers'].update(self.auth_headers)
-            else:
-                kwargs['headers'] = self.auth_headers
-        return self._r.get(*args, **kwargs)
-
-    def post(self, *args, **kwargs):
-        if self.token:
-            if 'headers' in kwargs:
-                kwargs['headers'].update(self.auth_headers)
-            else:
-                kwargs['headers'] = self.auth_headers
-        return self._r.post(*args, **kwargs)
-
-    def put(self, *args, **kwargs):
-        if self.token:
-            if 'headers' in kwargs:
-                kwargs['headers'].update(self.auth_headers)
-            else:
-                kwargs['headers'] = self.auth_headers
-        return self._r.put(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        if self.token:
-            if 'headers' in kwargs:
-                kwargs['headers'].update(self.auth_headers)
-            else:
-                kwargs['headers'] = self.auth_headers
-        return self._r.delete(*args, **kwargs)
-
-    def head(self, *args, **kwargs):
-        if self.token:
-            if 'headers' in kwargs:
-                kwargs['headers'].update(self.auth_headers)
-            else:
-                kwargs['headers'] = self.auth_headers
-        return self._r.head(*args, **kwargs)
 
 class ChannelMixin(object):
     def channel(self, channel):
@@ -148,6 +100,6 @@ class VideosMixin(object):
             args['offset'] = offset
         return self._r.get('channels/%s/videos' % channel, args=args)
 
-class TwitchAPI(BaseTwitch, ChannelMixin, GamesMixin, IngestsMixin,
+class TwitchAPI(base.BaseTwitch, ChannelMixin, GamesMixin, IngestsMixin,
         SearchMixin, TeamsMixin, UserMixin, VideosMixin):
     pass
