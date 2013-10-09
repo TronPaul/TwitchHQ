@@ -4,7 +4,7 @@ import setuptools
 setuptools.setup(
     license="MIT",
     name="TwitchHQ",
-    version='1.0.0',
+    version='1.1.0',
     keywords=["twitchtv","twitch","api","client","justintv","justin"],
     description="Python Library for Twitch.tv",
     long_description=open("README.md").read(),
